@@ -202,14 +202,17 @@ function FlatpickrInstance(
     }
   }
 
+  function isShow24p() {
+    return self.config.time_24hr && self.config.show_24p;
+  }
+
   /**
    * Syncs the selected date object time with user's time input
    */
   function setHoursFromInputs() {
     if (self.hourElement === undefined || self.minuteElement === undefined)
       return;
-
-    let hours = (parseInt(self.hourElement.value.slice(-2), 10) || 0) % 24,
+    let hours = (parseInt(self.hourElement.value.slice(-2), 10) || 0) % (isShow24p() ? 25 : 24),
       minutes = (parseInt(self.minuteElement.value, 10) || 0) % 60,
       seconds =
         self.secondElement !== undefined
@@ -312,7 +315,16 @@ function FlatpickrInstance(
    */
   function setHours(hours: number, minutes: number, seconds: number) {
     if (self.latestSelectedDateObj !== undefined) {
-      self.latestSelectedDateObj.setHours(hours % 24, minutes, seconds || 0, 0);
+      if (isShow24p()) {
+        if (hours == 24) {
+          let latestSelectedDateObjTime = self.latestSelectedDateObj.getTime() - 86_400_000;
+          self.latestSelectedDateObj = new Date(latestSelectedDateObjTime);   
+        }
+        self.latestSelectedDateObj.setHours(hours % 25, minutes, seconds || 0, 0);
+        self.selectedDates = [self.latestSelectedDateObj];
+      } else {
+        self.latestSelectedDateObj.setHours(hours % 24, minutes, seconds || 0, 0);
+      }
     }
 
     if (!self.hourElement || !self.minuteElement || self.isMobile) return;
@@ -1148,7 +1160,7 @@ function FlatpickrInstance(
     );
 
     self.hourElement.setAttribute("min", self.config.time_24hr ? "0" : "1");
-    self.hourElement.setAttribute("max", self.config.time_24hr ? "23" : "12");
+    self.hourElement.setAttribute("max", self.config.time_24hr ? (self.config.show_24p ? "24" : "23") : "12");
 
     self.minuteElement.setAttribute("min", "0");
     self.minuteElement.setAttribute("max", "59");
@@ -2717,8 +2729,12 @@ function FlatpickrInstance(
           ? self.formatDate(self.latestSelectedDateObj, self.mobileFormatStr)
           : "";
     }
-
-    self.input.value = getDateStr(self.config.dateFormat);
+  
+    if (isShow24p() && (parseInt((self.hourElement as HTMLInputElement).value) == 24)) {
+      self.input.value = getDateStr("Y-m-d 24:00");
+    } else {
+      self.input.value = getDateStr(self.config.dateFormat);
+    }
 
     if (self.altInput !== undefined) {
       self.altInput.value = getDateStr(self.config.altFormat);
@@ -2768,6 +2784,27 @@ function FlatpickrInstance(
     if (typeof input.value !== "undefined" && input.value.length === 2) {
       const isHourElem = input === self.hourElement,
         isMinuteElem = input === self.minuteElement;
+
+      if (isShow24p()) {
+        if (int(isHourElem)) {
+          if ((curValue >= 23) && (delta == 1)) {
+            (self.minuteElement as HTMLInputElement).value = "0";
+          }
+  
+          if ((curValue == 24) && (delta == 1)) {
+            newValue = 24;
+          } else if ((curValue == 0) && (delta == -1)) {
+            newValue = 0;
+          }
+        }
+  
+        if (int(isMinuteElem)) {
+          let hours = parseInt((self.hourElement as HTMLInputElement).value);
+          if (hours == 24) {
+            newValue = 0;
+          }
+        }        
+      }
 
       if (newValue < min) {
         newValue =

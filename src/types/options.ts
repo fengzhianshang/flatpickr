@@ -240,6 +240,9 @@ Use it along with "enableTime" to create a time picker. */
   /* Displays time picker in 24 hour mode without AM/PM selection when enabled.*/
   time_24hr: boolean;
 
+  /* 显示24点 */
+  show_24p: boolean;
+
   /* Display week numbers left of the calendar. */
   weekNumbers: boolean;
 
@@ -314,6 +317,7 @@ export interface ParsedOptions {
   showMonths: number;
   static: boolean;
   time_24hr: boolean;
+  show_24p: boolean;
   weekNumbers: boolean;
   wrap: boolean;
 }
@@ -396,6 +400,7 @@ export const defaults: ParsedOptions = {
   showMonths: 1,
   static: false,
   time_24hr: false,
+  show_24p: false,
   weekNumbers: false,
   wrap: false,
 };
