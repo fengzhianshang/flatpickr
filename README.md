@@ -1,3 +1,16 @@
+## 显示24点
+
+```
+var fp = flatpickr("#bb", {
+  enableTime: true,
+  defaultHour: 8,
+  time_24hr: true,
+  show_24p: true, // 需要显示24点，该选项设置为true
+  locale: 'zh',
+  static: true // 解决这个报错： Uncaught RangeError: Maximum call stack size exceeded using bootstrap v.4 modal
+})   
+```
+
 ## flatpickr - javascript datetime picker
 [![Build Status](https://circleci.com/gh/flatpickr/flatpickr/tree/master.svg?style=shield)](https://circleci.com/gh/flatpickr/flatpickr/tree/master)
 
